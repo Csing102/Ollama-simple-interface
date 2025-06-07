@@ -56,7 +56,7 @@ The server will start on `http://localhost:3000` (default port). You can customi
 #### Accessing the Chat Interface
 
 1. Open a web browser.
-2. Go to `http://localhost:3000`.
+2. Go to `http://localhost:3000`. <======== For 'ME' this didn't work, so I just openend the index.html file on my Browser and it worked just fine.
 3. You'll see the chat interface where you can interact with the application.
 
 ---
