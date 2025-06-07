@@ -1,294 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chris - AI</title>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chris - AI Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    body {
-      margin: 0;
-      background: #f4f6fb;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+        body {
+            margin: 0;
+            background: #343541;
+            color: #d1d5db;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-    header {
-      background-color: #4a90e2;
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom-left-radius: 12px;
-      border-bottom-right-radius: 12px;
-    }
+        header {
+            background-color: #202123;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #40414f;
+        }
 
-    .chat-container {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-    }
+        .chat-container {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .message {
-      max-width: 75%;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 15px;
-      word-wrap: break-word;
-    }
+        .message {
+            max-width: 75%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 15px;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-    .user {
-      background-color: #d2e3fc;
-      align-self: flex-end;
-      text-align: right;
-      margin-left: auto;
-    }
+        .user {
+            background-color: #40414f;
+            color: #d1d5db;
+            align-self: flex-end;
+            text-align: right;
+            margin-left: auto;
+        }
 
-    .bot {
-      background-color: #e5e5e5;
-      align-self: flex-start;
-      text-align: left;
-      margin-right: auto;
-    }
+        .bot {
+            background-color: #444654;
+            color: white;
+            align-self: flex-start;
+            text-align: left;
+            margin-right: auto;
+        }
 
-    .input-area {
-      display: flex;
-      padding: 1rem;
-      background: white;
-      border-top: 1px solid #ccc;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #10a37f;
+            color: white;
+            font-weight: bold;
+        }
 
-    input[type="text"] {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      outline: none;
-      margin-right: 0.5rem;
-    }
+        .input-area {
+            display: flex;
+            padding: 1rem;
+            background: #202123;
+            border-top: 1px solid #40414f;
+        }
 
-    button {
-      padding: 0.75rem 1rem;
-      background-color: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+        input[type="text"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #565869;
+            border-radius: 20px;
+            outline: none;
+            margin-right: 0.5rem;
+            background: #40414f;
+            color: #d1d5db;
+        }
 
-    button:hover {
-      background-color: #357ab8;
-    }
+        input[type="text"]::placeholder {
+            color: #8e8ea0;
+        }
 
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 10;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
+        button {
+            padding: 0.75rem 1rem;
+            background-color: #10a37f;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-    .modal-content {
-      background-color: white;
-      margin: 10% auto;
-      padding: 2rem;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 400px;
-    }
+        button:hover {
+            background-color: #0d8a6b;
+        }
 
-    .close {
-      float: right;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            color: #8e8ea0;
+        }
 
-    select, textarea {
-      width: 100%;
-      margin-top: 1rem;
-      padding: 0.75rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      resize: none;
-    }
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
 
-    .settings-group {
-      margin-top: 1rem;
-    }
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #8e8ea0;
+            animation: typing 1.4s infinite ease-in-out;
+        }
 
-    .settings-group h3 {
-      margin-bottom: 0.5rem;
-    }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
-    input[type="checkbox"] {
-      margin-right: 0.5rem;
-    }
-
-    .thinking {
-      display: inline-block;
-      font-weight: bold;
-      font-size: 1.2em;
-      padding: 0.5em;
-    }
-
-    .thinking::after {
-      content: '';
-      display: inline-block;
-      animation: dots 1s infinite steps(3, end);
-    }
-
-    @keyframes dots {
-      0% { content: ' '; }
-      33% { content: '  ο'; }
-      66% { content: '  ο ○'; }
-      100% { content: '  ο ○ ◯'; }
-    }
-
-  </style>
+        @keyframes typing {
+            0%, 80%, 100% { opacity: 0.3; }
+            40% { opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-
-<header>
-  <h1>Chris</h1>
-  <button onclick="openSettings()"><i data-feather="settings"></i></button>
-</header>
-
-<div class="chat-container" id="chat"></div>
-
-<div class="input-area">
-  <input type="text" id="userInput" placeholder="Type a message..." />
-  <button onclick="sendMessage()"><i data-feather="send"></i></button>
-</div>
-
-<div class="modal" id="settingsModal">
-  <div class="modal-content">
-    <span class="close" onclick="closeSettings()">&times;</span>
-    <h2>Settings</h2>
-    <div class="settings-group">
-      <h3>Model:</h3>
-      <select id="modelSelect">
-        <option value="llama3">Chris3</option>
-        <option value="tinyllama">tiny Chris</option>
-        <option value="smollm:135m" selected>lil Chris</option>
-      </select>
+    <header>
+        <h1>Chris - AI Chat</h1>
+        <button onclick="openSettings()">Settings</button>
+    </header>
+    <div class="chat-container" id="chat-container">
+        <!-- Messages will be dynamically added here -->
     </div>
-    <div class="settings-group">
-      <h3>System Prompt:</h3>
-      <textarea id="systemPrompt" rows="4" placeholder="You are Chris, a helpful AI...">You are Chris, a helpful assistant.</textarea>
+    <div class="typing-indicator" id="typing-indicator" style="display: none;">
+        <div class="typing-dots">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+        <span>Chris is typing...</span>
     </div>
-    <div class="settings-group">
-      <h3>Advanced Features:</h3>
-      <label><input type="checkbox" id="enableMarkdown" checked /> Enable Markdown Rendering</label>
-      <label><input type="checkbox" id="enableStreaming" /> Enable Response Streaming</label>
-      <label><input type="checkbox" id="enableDebugging" /> Enable Debugging Mode</label>
+    <div class="input-area">
+        <input type="text" id="message-input" placeholder="Type your message..." onkeydown="handleInput(event)">
+        <button onclick="sendMessage()">Send</button>
     </div>
-  </div>
-</div>
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const typingIndicator = document.getElementById('typing-indicator');
 
-<script>
-  const currentModel = 'smollm:135m';
-  let systemPrompt = document.getElementById('systemPrompt').value;
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message) return;
 
-  function renderMarkdown(markdownText) {
-    if (document.getElementById('enableMarkdown').checked) {
-      document.getElementById("chat").innerHTML += `<div class="message bot">${marked.parse(markdownText)}</div>`;
-    }
-  }
+            addMessage('user', message);
+            input.value = '';
+            await simulateBotResponse(message);
+        }
 
-  function openSettings() {
-    document.getElementById('settingsModal').style.display = 'block';
-  }
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = role === 'user' ? 'U' : 'B';
+            const text = document.createElement('div');
+            text.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(text);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-  function closeSettings() {
-    document.getElementById('settingsModal').style.display = 'none';
-    systemPrompt = document.getElementById('systemPrompt').value;
-  }
+        async function simulateBotResponse(userMessage) {
+            typingIndicator.style.display = 'flex';
 
-  function addMessage(content, sender) {
-    const chat = document.getElementById('chat');
-    const message = document.createElement('div');
-    message.className = `message ${sender}`;
-    message.innerText = content;
-    chat.appendChild(message);
-    chat.scrollTop = chat.scrollHeight;
-  }
+            try {
+                const response = await fetch('http://localhost:3000/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: userMessage }),
+                });
 
-  function sendMessage() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
+                if (!response.ok) {
+                    throw new Error('Failed to fetch response from server');
+                }
 
-    addMessage(text, 'user');
-    input.value = '';
-    fetchResponse(text);
-  }
-   addThinking();
-  function fetchResponse(userInput) {
-    fetch('http://localhost:3000/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: currentModel,
-        stream: document.getElementById('enableStreaming').checked,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userInput }
-        ]
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        removeThinking();
-        const botMessage = data?.message?.content || '[No response]';
-        renderMarkdown(botMessage);
-      })
-      .catch(err => {
-        addMessage(`[Error] ${err.message}`, 'bot');
-      });
-  }
-
-  function addThinking() {
-    const chat = document.getElementById('chat');
-    const thinking = document.createElement('div');
-    thinking.className = 'message bot thinking';
-    thinking.id = 'thinkingMsg';
-    thinking.textContent = 'Chris is thinking   ';
-    chat.appendChild(thinking);
-    chat.scrollTop = chat.scrollHeight;
-  }
-
-  function removeThinking() {
-    const thinkingMsg = document.getElementById('thinkingMsg');
-    if (thinkingMsg) thinkingMsg.remove();
-  }
-
-  document.getElementById('userInput').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-      sendMessage();
-    }
-  });
-
-  window.onclick = function(event) {
-    const modal = document.getElementById('settingsModal');
-    if (event.target == modal) modal.style.display = "none";
-  }
-
-  feather.replace(); // Initialize Feather icons
-</script>
-
+                const data = await response.json();
+                typingIndicator.style.display = 'none';
+                addMessage('bot', data.response || 'Response not available');
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                addMessage('bot', `Error: ${error.message}`);
+            }
+        }
+    </script>
 </body>
 </html>
