@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stable-Code:3B Interface</title>
+  <title>Stable-Code:3B Chat</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -105,59 +105,57 @@
     </div>
   </div>
 
-<script>
-  // Force local Ollama endpoint
-// ✅ CORRECT (Directs traffic from GitHub Pages to your local Ollama)
-const ENDPOINT = 'http://localhost:11434/api/generate';
+  <script>
+    // CORRECT ENDPOINT: Hits your local machine running Ollama directly
+    const ENDPOINT = 'http://localhost:11434/api/generate';
 
-  async function sendMessage() {
-    const promptInput = document.getElementById('prompt');
-    const sendBtn = document.getElementById('sendBtn');
-    const prompt = promptInput.value.trim();
+    async function sendMessage() {
+      const promptInput = document.getElementById('prompt');
+      const sendBtn = document.getElementById('sendBtn');
+      const prompt = promptInput.value.trim();
 
-    if (!prompt) return;
+      if (!prompt) return;
 
-    appendMessage(prompt, 'user');
-    promptInput.value = '';
-    sendBtn.disabled = true;
+      appendMessage(prompt, 'user');
+      promptInput.value = '';
+      sendBtn.disabled = true;
 
-    const botMessageDiv = appendMessage('Generating code...', 'bot');
+      const botMessageDiv = appendMessage('Generating code...', 'bot');
 
-    try {
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'stable-code:3b',
-          prompt: prompt,
-          stream: false
-        })
-      });
+      try {
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'stable-code:3b',
+            prompt: prompt,
+            stream: false
+          })
+        });
 
-      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Server returned HTTP ${response.status}`);
+        }
 
-      const data = await response.json();
-      botMessageDiv.textContent = data.response;
+        const data = await response.json();
+        botMessageDiv.textContent = data.response;
 
-    } catch (err) {
-      botMessageDiv.textContent = `Error connecting to Ollama: ${err.message}\n\n` +
-        `1. Make sure Ollama is running.\n` +
-        `2. Ensure OLLAMA_ORIGINS is set to allow your GitHub Pages site.\n` +
-        `3. If on Chrome/Brave, check for Mixed Content blocking in the address bar.`;
-    } finally {
-      sendBtn.disabled = false;
+      } catch (err) {
+        botMessageDiv.textContent = `Error: ${err.message}\n\nIf you get a fetch failure:\n1. Make sure Ollama is running ('ollama serve').\n2. Allow 'Insecure Content' in your browser settings for csing102.github.io.`;
+      } finally {
+        sendBtn.disabled = false;
+      }
     }
-  }
 
-  function appendMessage(text, className) {
-    const messagesContainer = document.getElementById('messages');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${className}`;
-    msgDiv.textContent = text;
-    messagesContainer.appendChild(msgDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    return msgDiv;
-  }
-</script>
+    function appendMessage(text, className) {
+      const messagesContainer = document.getElementById('messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${className}`;
+      msgDiv.textContent = text;
+      messagesContainer.appendChild(msgDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return msgDiv;
+    }
+  </script>
 </body>
 </html>
