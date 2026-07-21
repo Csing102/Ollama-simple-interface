@@ -1,7 +1,7 @@
 const http = require('http');
 const { spawn } = require('child_process');
 
-const DEFAULT_MODEL = 'smollm:135m';
+const DEFAULT_MODEL = 'stable-code:3b';
 const API_URL = 'http://localhost:11434';
 const PROXY_PORT = 3000;
 
