@@ -107,7 +107,8 @@
 
 <script>
   // Force local Ollama endpoint
-  const ENDPOINT = 'http://localhost:11434/api/generate';
+// ✅ CORRECT (Directs traffic from GitHub Pages to your local Ollama)
+const ENDPOINT = 'http://localhost:11434/api/generate';
 
   async function sendMessage() {
     const promptInput = document.getElementById('prompt');
