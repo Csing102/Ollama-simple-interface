@@ -105,59 +105,58 @@
     </div>
   </div>
 
-  <script>
-    // Automatically uses local proxy path if served via server, or absolute URL if opened as a file
-    const ENDPOINT = window.location.protocol.startsWith('http') 
-      ? '/api/generate' 
-      : 'http://localhost:11434/api/generate';
+<script>
+  // Force local Ollama endpoint
+  const ENDPOINT = 'http://localhost:11434/api/generate';
 
-    async function sendMessage() {
-      const promptInput = document.getElementById('prompt');
-      const sendBtn = document.getElementById('sendBtn');
-      const prompt = promptInput.value.trim();
+  async function sendMessage() {
+    const promptInput = document.getElementById('prompt');
+    const sendBtn = document.getElementById('sendBtn');
+    const prompt = promptInput.value.trim();
 
-      if (!prompt) return;
+    if (!prompt) return;
 
-      appendMessage(prompt, 'user');
-      promptInput.value = '';
-      sendBtn.disabled = true;
+    appendMessage(prompt, 'user');
+    promptInput.value = '';
+    sendBtn.disabled = true;
 
-      const botMessageDiv = appendMessage('Generating response...', 'bot');
+    const botMessageDiv = appendMessage('Generating code...', 'bot');
 
-      try {
-        const response = await fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'stable-code:3b',
-            prompt: prompt,
-            stream: false // Disabled streaming to guarantee complete payload arrival without CORS/chunk errors
-          })
-        });
+    try {
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'stable-code:3b',
+          prompt: prompt,
+          stream: false
+        })
+      });
 
-        if (!response.ok) {
-          throw new Error(`Server returned HTTP ${response.status}`);
-        }
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
 
-        const data = await response.json();
-        botMessageDiv.textContent = data.response;
+      const data = await response.json();
+      botMessageDiv.textContent = data.response;
 
-      } catch (err) {
-        botMessageDiv.textContent = `Error: ${err.message}\n\nCheck that Ollama or your Python/Node server is currently running.`;
-      } finally {
-        sendBtn.disabled = false;
-      }
+    } catch (err) {
+      botMessageDiv.textContent = `Error connecting to Ollama: ${err.message}\n\n` +
+        `1. Make sure Ollama is running.\n` +
+        `2. Ensure OLLAMA_ORIGINS is set to allow your GitHub Pages site.\n` +
+        `3. If on Chrome/Brave, check for Mixed Content blocking in the address bar.`;
+    } finally {
+      sendBtn.disabled = false;
     }
+  }
 
-    function appendMessage(text, className) {
-      const messagesContainer = document.getElementById('messages');
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `message ${className}`;
-      msgDiv.textContent = text;
-      messagesContainer.appendChild(msgDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      return msgDiv;
-    }
-  </script>
+  function appendMessage(text, className) {
+    const messagesContainer = document.getElementById('messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${className}`;
+    msgDiv.textContent = text;
+    messagesContainer.appendChild(msgDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return msgDiv;
+  }
+</script>
 </body>
 </html>
