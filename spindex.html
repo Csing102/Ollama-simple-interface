@@ -3,62 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stable-Code:3b Interface</title>
+    <title>Stable-Code:3b Completion Workbench</title>
+    
+    <!-- Code Highlighting (Prism.js) -->
+    <link href="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css)" rel="stylesheet" />
+    
+    <!-- LaTeX / Math (KaTeX) -->
+    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css](https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css)">
+
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background: #121212; color: #e0e0e0; }
-        textarea { width: 100%; height: 120px; background: #1e1e1e; color: #fff; border: 1px solid #333; padding: 0.5rem; border-radius: 6px; box-sizing: border-box; }
-        button { background: #2563eb; color: white; border: none; padding: 0.6rem 1.2rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 0.5rem; }
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #3b82f6;
+            --text: #f8fafc;
+            --border: #334155;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        .badge {
+            background: #1e3a8a;
+            color: #93c5fd;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        textarea:focus { outline: 2px solid var(--accent); }
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+        }
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+        }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        pre { background: #1e1e1e; padding: 1rem; border-radius: 6px; overflow-x: auto; min-height: 100px; white-space: pre-wrap; }
+        .output-box {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            min-height: 200px;
+            line-height: 1.6;
+        }
+        pre {
+            position: relative;
+            border-radius: 6px;
+            overflow-x: auto;
+            background: #090d16 !important;
+            padding: 1rem;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #475569;
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .katex-display { margin: 1em 0; overflow-x: auto; }
     </style>
 </head>
 <body>
 
-    <h2>Stable-Code 3B Generator</h2>
-    <p>Prompt your local model to write code:</p>
-    
-    <textarea id="prompt" placeholder="Write a JavaScript function to reverse a string..."></textarea>
-    <br>
-    <button id="generateBtn" onclick="generateCode()">Generate Code</button>
+    <div class="container">
+        <div class="header">
+            <h2>Stable-Code:3b Workspace</h2>
+            <span class="badge">Completion Mode</span>
+        </div>
 
-    <h3>Output:</h3>
-    <pre id="output">Result will appear here...</pre>
+        <textarea id="prompt" placeholder="Write a Python function for QuickSort and express time complexity in LaTeX $$O(n \log n)$$"></textarea>
+        
+        <div class="controls">
+            <button id="runBtn" onclick="sendPrompt()">Generate Output</button>
+        </div>
+
+        <div class="output-box" id="output">Output will render here...</div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js)"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js](https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js](https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js](https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js)"></script>
 
     <script>
-        async function generateCode() {
+        async function sendPrompt() {
             const prompt = document.getElementById("prompt").value;
             const outputEl = document.getElementById("output");
-            const btn = document.getElementById("generateBtn");
+            const btn = document.getElementById("runBtn");
 
             if (!prompt.trim()) return;
 
             btn.disabled = true;
-            outputEl.textContent = "Thinking...";
+            outputEl.innerHTML = "<em>Completing code...</em>";
 
             try {
-                // Direct call to local Ollama API
-                const response = await fetch("http://localhost:11434/api/generate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: "stable-code:3b",
-                        prompt: prompt,
-                        stream: false
-                    })
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    outputEl.innerHTML = `<span style="color: #ef4444;">Error: ${data.error}</span>`;
+                    return;
                 }
 
-                const data = await response.json();
-                outputEl.textContent = data.response;
+                // If output doesn't contain markdown code fences, auto-wrap it for proper display
+                let textToParse = data.result;
+                if (!textToParse.includes("```")) {
+                    textToParse = "```javascript\n" + textToParse + "\n```";
+                }
+
+                // 1. Render Markdown
+                outputEl.innerHTML = marked.parse(textToParse);
+
+                // 2. Render LaTeX Equations ($...$ or $$...$$)
+                renderMathInElement(outputEl, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+
+                // 3. Highlight Code & Add Copy Buttons
+                Prism.highlightAllUnder(outputEl);
+                addCopyButtons();
+
             } catch (err) {
-                outputEl.textContent = "Error: " + err.message + 
-                    "\n\nIf you see a fetch error, make sure Ollama is running with OLLAMA_ORIGINS=\"*\" set!";
+                outputEl.innerHTML = `<span style="color: #ef4444;">Connection failed: ${err.message}</span>`;
             } finally {
                 btn.disabled = false;
             }
+        }
+
+        function addCopyButtons() {
+            document.querySelectorAll('pre').forEach((block) => {
+                if (block.querySelector('.copy-btn')) return;
+                const button = document.createElement('button');
+                button.className = 'copy-btn';
+                button.innerText = 'Copy';
+                button.addEventListener('click', () => {
+                    const codeText = block.querySelector('code') ? block.querySelector('code').innerText : block.innerText;
+                    navigator.clipboard.writeText(codeText);
+                    button.innerText = 'Copied!';
+                    setTimeout(() => button.innerText = 'Copy', 2000);
+                });
+                block.appendChild(button);
+            });
         }
     </script>
 </body>
